@@ -532,7 +532,7 @@ document.getElementById('btn-clear').addEventListener('click', () => {
 document.getElementById('btn-copy').addEventListener('click', () => {
   if (!state.currentMat || !state.currentMat.c.sn) return;
   const pts  = state.currentMat.c.sn;
-  const rows = ['Cycles to Failure (N)\tStress Amplitude (MPa)'];
+  const rows = [];
   pts.forEach(p => rows.push(`${+p[0].toPrecision(6)}\t${+p[1].toPrecision(6)}`));
   navigator.clipboard.writeText(rows.join('\n')).then(() => {
     const btn  = document.getElementById('btn-copy');
