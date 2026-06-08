@@ -332,8 +332,8 @@ const ssChart = new Chart(document.getElementById('ss-canvas'), {
            grid: { color: 'rgba(0,0,0,0.07)' } }
     },
     plugins: {
-      legend: { position: 'top', labels: { font: { size: 12 }, boxWidth: 18 } },
-      tooltip: { mode: 'nearest', intersect: false }
+      legend: { position: 'top', labels: { font: { size: 12 }, boxWidth: 18, filter: (item) => !item.text.endsWith(' (Yield)') } },
+      tooltip: { mode: 'nearest', intersect: false, filter: (item) => !item.dataset.label.endsWith(' (Yield)') }
     }
   }
 });
@@ -381,13 +381,33 @@ function makeDataset(name, color, points, pointStyle) {
   };
 }
 
+function makeYieldDataset(name, color, ssPoints) {
+  const yp = ssPoints[0];
+  return {
+    label:                name + ' (Yield)',
+    data:                 [{ x: 0, y: 0 }, { x: yp[0], y: yp[1] }],
+    borderColor:          color,
+    backgroundColor:      color,
+    borderWidth:          1.5,
+    pointRadius:          [0, 6],
+    pointHoverRadius:     [0, 8],
+    pointBackgroundColor: [color, color],
+    pointBorderColor:     [color, color],
+    showLine:             true,
+    tension:              0
+  };
+}
+
 function rebuildCharts() {
   ssChart.data.datasets = [];
   snChart.data.datasets = [];
 
   // Retained materials first
   state.retained.forEach(({ mat, color }, name) => {
-    if (mat.c.ss) ssChart.data.datasets.push(makeDataset(name, color, mat.c.ss, 'circle'));
+    if (mat.c.ss) {
+      ssChart.data.datasets.push(makeYieldDataset(name, color, mat.c.ss));
+      ssChart.data.datasets.push(makeDataset(name, color, mat.c.ss, 'circle'));
+    }
     if (mat.c.sn) snChart.data.datasets.push(makeDataset(name, color, mat.c.sn, 'rect'));
   });
 
@@ -395,7 +415,10 @@ function rebuildCharts() {
   if (state.currentName && !state.retained.has(state.currentName)) {
     const mat   = state.currentMat;
     const color = getColor(state.currentName);
-    if (mat.c.ss) ssChart.data.datasets.push(makeDataset(state.currentName, color, mat.c.ss, 'circle'));
+    if (mat.c.ss) {
+      ssChart.data.datasets.push(makeYieldDataset(state.currentName, color, mat.c.ss));
+      ssChart.data.datasets.push(makeDataset(state.currentName, color, mat.c.ss, 'circle'));
+    }
     if (mat.c.sn) snChart.data.datasets.push(makeDataset(state.currentName, color, mat.c.sn, 'rect'));
   }
 
